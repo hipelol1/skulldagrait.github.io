@@ -1,67 +1,491 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>skulldagrait's hub</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f4f4f9;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #222;
-      color: #fff;
-      padding: 1em;
-    }
-    h1 {
-      margin: 0;
-    }
-    .projects {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 20px;
-    }
-    .item {
-      background: #fff;
-      margin: 10px;
-      padding: 15px;
-      width: 200px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      transition: transform 0.2s ease;
-    }
-    .item:hover {
-      transform: scale(1.05);
-    }
-    a {
-      text-decoration: none;
-      color: #0077cc;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>skulldagrait's hub — index</title>
+<style>
+  :root{
+    --bg:#f4f4f9;
+    --card:#fff;
+    --accent:#0077cc;
+    --header:#222;
+    --shadow:0 3px 14px rgba(0,0,0,0.08);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    margin:0;
+    background:var(--bg);
+    color:#111;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  header{
+    background:var(--header);
+    color:#fff;
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  header h1{margin:0;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+  header .controls{display:flex;align-items:center;gap:8px;font-size:0.95rem}
+
+  main{display:grid;grid-template-columns:360px 1fr;gap:18px;padding:18px;min-height:calc(100vh - 72px);}
+
+  /* left column */
+  .list-panel{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:14px;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .search{flex:1;display:flex;gap:8px}
+  .search input{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e6}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:0.9rem}
+  .projects{display:flex;flex-direction:column;gap:10px;margin-top:6px;overflow:auto;padding-right:6px}
+  .item{
+    display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);
+    transition:transform .12s, box-shadow .12s;
+    cursor:pointer; user-select:none;
+  }
+  .item:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,0.06)}
+  .emoji{font-size:1.25rem;width:38px;text-align:center}
+  .labels{flex:1;text-align:left}
+  .title{font-weight:700}
+  .subtitle{font-size:0.82rem;color:#666;margin-top:4px}
+  .item .actions{display:flex;gap:8px;align-items:center}
+  .icon-btn{background:transparent;border:0;padding:6px;border-radius:8px;cursor:pointer}
+  .icon-btn:hover{background:#f0f4f8}
+
+  /* preview column */
+  .preview{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:420px;
+  }
+  .preview header{padding:12px 14px;border-bottom:1px solid rgba(0,0,0,0.04);display:flex;justify-content:space-between;align-items:center}
+  .preview iframe{flex:1;border:0;width:100%;min-height:320px}
+  .preview .empty{padding:30px;text-align:center;color:#666}
+
+  footer{padding:10px 18px;text-align:center;color:#666;font-size:0.85rem}
+  .small{font-size:0.85rem;color:#666}
+  .btn{
+    background:transparent;border:1px solid rgba(0,0,0,0.08);padding:8px 10px;border-radius:8px;cursor:pointer;
+  }
+  .btn.primary{background:var(--accent);color:#fff;border:0}
+  .danger{border-color:#f1c0c0}
+  .muted{color:#666}
+  .editor{
+    display:flex;flex-direction:column;gap:8px;padding:12px;border-top:1px dashed rgba(0,0,0,0.04);
+    background:#fafafa;
+  }
+  .editor input{padding:8px;border-radius:8px;border:1px solid #e0e0e6}
+
+  @media (max-width:880px){
+    main{grid-template-columns:1fr; padding:12px}
+    .preview{order:2}
+    .list-panel{order:1}
+  }
+</style>
 </head>
 <body>
   <header>
-    <h1>📂 skulldagrait's hub 📂</h1>
-    <p>Select a project below to open</p>
+    <h1>📂 skulldagrait's hub</h1>
+    <div class="controls">
+      <label class="toggle" title="Show original names">
+        <input id="showOriginal" type="checkbox" /> Show original names
+      </label>
+      <button id="exportIndex" class="btn">Export index</button>
+      <button id="saveLocal" class="btn">Save to local</button>
+      <button id="resetBtn" class="btn">Reset</button>
+    </div>
   </header>
 
-  <div class="projects">
-    <div class="item"><a href="Appel.html">🍎 Project A</a></div>
-    <div class="item"><a href="Battle-Cats.html">🐱 Project B</a></div>
-    <div class="item"><a href="Geometry-Dash-Meltdown.html">🎵 Project C</a></div>
-    <div class="item"><a href="Geometry_Dash_World_Toxic_Factory.html">⚡ Project D</a></div>
-    <div class="item"><a href="Minecraft.html">⛏️ Project E</a></div>
-    <div class="item"><a href="Pen-Football-Mod.html">⚽ Project F</a></div>
-    <div class="item"><a href="Robux-Clicker.html">💰 Project G</a></div>
-    <div class="item"><a href="Scratchball-3D.html">🔮 Project H</a></div>
-    <div class="item"><a href="Wheelie-Bike.html">🚴 Project I</a></div>
-    <div class="item"><a href="pong.html">🏓 Project J</a></div>
-  </div>
+  <main>
+    <section class="list-panel" aria-label="Project list">
+      <div class="toolbar">
+        <div class="search">
+          <input id="filterInput" placeholder="Filter projects (type to search)" aria-label="Filter projects" />
+        </div>
+        <div class="small">Items: <span id="count">0</span></div>
+      </div>
+
+      <div class="projects" id="projectsList">
+        <!-- items injected by JS -->
+      </div>
+
+      <div class="editor">
+        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <div class="muted">Selected: <strong id="selectedLabel">none</strong></div>
+          <div style="display:flex;gap:8px">
+            <button id="downloadAllPlaceholders" class="btn">Download all placeholders</button>
+            <button id="createPlaceholder" class="btn">Create placeholder for selected</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <input id="editNeutral" placeholder="Neutral label (what filters see)" />
+          <input id="editOriginal" placeholder="Original label (your real name)" />
+        </div>
+        <div style="display:flex;gap:8px">
+          <input id="editFile" placeholder="Filename (e.g., Minecraft.html)" />
+          <button id="applyEdit" class="btn primary">Apply</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="openNewTab" class="btn">Open selected in new tab</button>
+          <button id="reloadBtn" class="btn">Reload preview</button>
+          <button id="clearLocal" class="btn danger">Clear saved edits</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview" aria-label="Preview area">
+      <header>
+        <div id="previewTitle">Preview</div>
+        <div>
+          <button id="openPreviewInTab" class="btn">Open preview</button>
+        </div>
+      </header>
+
+      <div id="previewContainer">
+        <div class="empty" id="previewEmpty">Select a project on the left to load it here.</div>
+        <!-- iframe added dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Tip: Put the real files (e.g., <code>Appel.html</code>, <code>Minecraft.html</code>) in the same folder as this index. Use "Export index" after edits to download a version you can upload.
+  </footer>
+
+<script>
+/* ---------- CONFIG: edit these default values if you want ---------- */
+/* Keep file names exactly matching files in the same folder */
+const DEFAULT_PROJECTS = [
+  { emoji: "🍎", neutral: "Project A", original: "Appel", file: "Appel.html" },
+  { emoji: "🐱", neutral: "Project B", original: "Battle Cats", file: "Battle-Cats.html" },
+  { emoji: "🎵", neutral: "Project C", original: "Geometry Dash Meltdown", file: "Geometry-Dash-Meltdown.html" },
+  { emoji: "⚡", neutral: "Project D", original: "Geometry Dash World: Toxic Factory", file: "Geometry_Dash_World_Toxic_Factory.html" },
+  { emoji: "⛏️", neutral: "Project E", original: "Minecraft", file: "Minecraft.html" },
+  { emoji: "⚽", neutral: "Project F", original: "Pen Football Mod", file: "Pen-Football-Mod.html" },
+  { emoji: "💰", neutral: "Project G", original: "Robux Clicker", file: "Robux-Clicker.html" },
+  { emoji: "🔮", neutral: "Project H", original: "Scratchball 3D", file: "Scratchball-3D.html" },
+  { emoji: "🚴", neutral: "Project I", original: "Wheelie Bike", file: "Wheelie-Bike.html" },
+  { emoji: "🏓", neutral: "Project J", original: "Pong", file: "pong.html" }
+];
+/* ---------- end config ---------- */
+
+const LS_KEY = 'skulldag_index_cfg_v1';
+
+let PROJECTS = [];
+const projectsList = document.getElementById('projectsList');
+const countEl = document.getElementById('count');
+const filterInput = document.getElementById('filterInput');
+const showOriginalCheckbox = document.getElementById('showOriginal');
+const previewContainer = document.getElementById('previewContainer');
+const previewTitle = document.getElementById('previewTitle');
+const previewEmpty = document.getElementById('previewEmpty');
+
+const selectedLabel = document.getElementById('selectedLabel');
+const editNeutral = document.getElementById('editNeutral');
+const editOriginal = document.getElementById('editOriginal');
+const editFile = document.getElementById('editFile');
+const applyEdit = document.getElementById('applyEdit');
+const saveLocal = document.getElementById('saveLocal');
+const clearLocal = document.getElementById('clearLocal');
+const resetBtn = document.getElementById('resetBtn');
+const exportIndex = document.getElementById('exportIndex');
+
+const openNewTabBtn = document.getElementById('openNewTab');
+const reloadBtn = document.getElementById('reloadBtn');
+const createPlaceholder = document.getElementById('createPlaceholder');
+const downloadAllPlaceholders = document.getElementById('downloadAllPlaceholders');
+const openPreviewInTab = document.getElementById('openPreviewInTab');
+
+let currentFile = null;
+let currentIframe = null;
+let currentSelectedIndex = null;
+
+function loadFromLocalOrDefault(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed) && parsed.length>0){
+        PROJECTS = parsed;
+        return;
+      }
+    }
+  }catch(e){ console.warn('load error', e); }
+  // fallback
+  PROJECTS = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+}
+
+function saveToLocal(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(PROJECTS));
+    alert('Saved to localStorage.');
+  }catch(e){
+    alert('Failed to save: ' + e.message);
+  }
+}
+
+function clearLocal(){
+  if(confirm('Clear saved edits from localStorage? This will restore defaults in this browser.')){
+    localStorage.removeItem(LS_KEY);
+    loadFromLocalOrDefault();
+    renderList();
+    alert('Cleared.');
+  }
+}
+
+function resetToDefaults(){
+  if(!confirm('Reset this page to defaults? This will discard edits in this session (but not saved local files).')) return;
+  PROJECTS = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+  renderList();
+  saveToLocal();
+}
+
+function renderList(filterText = ''){
+  projectsList.innerHTML = '';
+  const showOriginal = showOriginalCheckbox.checked;
+  const q = (filterText || '').trim().toLowerCase();
+
+  const filtered = PROJECTS.filter((p, i) => {
+    const neutral = p.neutral.toLowerCase();
+    const orig = p.original.toLowerCase();
+    const f = p.file.toLowerCase();
+    return neutral.includes(q) || orig.includes(q) || f.includes(q) || p.emoji.includes(q);
+  });
+
+  filtered.forEach((p, idx) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.tabIndex = 0;
+    item.setAttribute('role','button');
+
+    item.innerHTML = `
+      <div class="emoji">${p.emoji}</div>
+      <div class="labels">
+        <div class="title">${ showOriginal ? escapeHtml(p.original) : escapeHtml(p.neutral) }</div>
+        <div class="subtitle">${escapeHtml(p.file)}</div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn edit-btn" title="Edit item" data-idx="${idx}">✏️</button>
+        <button class="icon-btn load-btn" title="Load in preview" data-idx="${idx}">▶️</button>
+      </div>
+    `;
+    // clicking the item loads it
+    item.addEventListener('click', (e) => {
+      // prevent double actions when clicking edit/load buttons
+      if(e.target.closest('.edit-btn') || e.target.closest('.load-btn')) return;
+      loadProject(p, idx);
+    });
+    // keyboard open
+    item.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') loadProject(p, idx); });
+
+    // edit button
+    item.querySelector('.edit-btn').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      openEditorFor(idx);
+    });
+    // quick load button
+    item.querySelector('.load-btn').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      loadProject(p, idx);
+    });
+
+    projectsList.appendChild(item);
+  });
+
+  countEl.textContent = filtered.length;
+}
+
+function loadProject(p, index){
+  currentFile = p.file;
+  currentSelectedIndex = index;
+  selectedLabel.textContent = p.file;
+  previewTitle.textContent = (showOriginalCheckbox.checked ? p.original : p.neutral);
+  previewContainer.innerHTML = '';
+  // create iframe
+  const ifr = document.createElement('iframe');
+  ifr.src = p.file;
+  ifr.title = p.original + ' preview';
+  ifr.style.width = '100%';
+  ifr.style.height = '100%';
+  previewContainer.appendChild(ifr);
+  currentIframe = ifr;
+
+  // populate editor inputs
+  editNeutral.value = p.neutral;
+  editOriginal.value = p.original;
+  editFile.value = p.file;
+}
+
+function openEditorFor(index){
+  const p = PROJECTS[index];
+  currentSelectedIndex = index;
+  selectedLabel.textContent = p.file;
+  editNeutral.value = p.neutral;
+  editOriginal.value = p.original;
+  editFile.value = p.file;
+  // scroll editor into view a bit
+  editNeutral.focus();
+}
+
+applyEdit.addEventListener('click', () => {
+  if(currentSelectedIndex === null){ alert('Select an item to edit (use the pencil icon).'); return; }
+  const n = editNeutral.value.trim() || PROJECTS[currentSelectedIndex].neutral;
+  const o = editOriginal.value.trim() || PROJECTS[currentSelectedIndex].original;
+  const f = editFile.value.trim() || PROJECTS[currentSelectedIndex].file;
+  // basic validation: file should end with .html (not required, but recommended)
+  PROJECTS[currentSelectedIndex].neutral = n;
+  PROJECTS[currentSelectedIndex].original = o;
+  PROJECTS[currentSelectedIndex].file = f;
+  renderList(filterInput.value);
+  // if edited item is currently loaded, reload preview
+  if(currentFile === PROJECTS[currentSelectedIndex].file){
+    loadProject(PROJECTS[currentSelectedIndex], currentSelectedIndex);
+  }
+  alert('Applied edits to the selected item.');
+});
+
+saveLocal.addEventListener('click', saveToLocal);
+clearLocal.addEventListener('click', clearLocal);
+resetBtn.addEventListener('click', resetToDefaults);
+
+filterInput.addEventListener('input', (e) => renderList(e.target.value));
+showOriginalCheckbox.addEventListener('change', () => renderList(filterInput.value));
+
+reloadBtn.addEventListener('click', () => {
+  if(currentIframe){
+    try{ currentIframe.contentWindow.location.reload(); } catch(e){ currentIframe.src = currentIframe.src; }
+  } else alert('No preview loaded.');
+});
+
+openNewTabBtn.addEventListener('click', () => {
+  if(currentSelectedIndex === null){ alert('Select an item first (use the pencil or click an item).'); return; }
+  const url = PROJECTS[currentSelectedIndex].file;
+  window.open(url, '_blank');
+});
+
+openPreviewInTab.addEventListener('click', () => {
+  if(!currentFile) return alert('No preview loaded.');
+  window.open(currentFile, '_blank');
+});
+
+/* ----- placeholder generation (simple HTML files) ----- */
+function makePlaceholderHtml(item){
+  const title = escapeHtml(item.original || item.neutral || item.file);
+  const content = `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f7fafc;margin:0}main{background:#fff;padding:24px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.08);max-width:720px;text-align:center}h1{margin:0 0 12px}p{color:#444}</style>
+</head>
+<body><main><h1>${title}</h1><p>This is a placeholder file for <code>${escapeHtml(item.file)}</code>. Replace this content with the real game or project page.</p></main></body>
+</html>`;
+  return content;
+}
+
+function downloadBlob(filename, content){
+  const blob = new Blob([content], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 600);
+}
+
+createPlaceholder.addEventListener('click', () => {
+  if(currentSelectedIndex === null){ alert('Select an item first.'); return; }
+  const p = PROJECTS[currentSelectedIndex];
+  const filename = p.file;
+  const html = makePlaceholderHtml(p);
+  downloadBlob(filename, html);
+});
+
+downloadAllPlaceholders.addEventListener('click', () => {
+  if(!confirm('Download placeholder files for every item? This will trigger multiple downloads (one per file).')) return;
+  PROJECTS.forEach(p => {
+    downloadBlob(p.file, makePlaceholderHtml(p));
+  });
+});
+
+/* ----- export index functionality: generate an index.html containing the edited PROJECTS array ----- */
+exportIndex.addEventListener('click', () => {
+  // build a copy of this file but with PROJECTS replaced
+  const sanitizedProjects = PROJECTS.map(p => ({
+    emoji: p.emoji,
+    neutral: p.neutral,
+    original: p.original,
+    file: p.file
+  }));
+  // We'll reconstruct a minimal index wrapper that contains the PROJECTS array and the same runtime.
+  // To keep it simple, create an index that sets window.EXPORTED_PROJECTS and includes a small loader.
+  const exportHtml = `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>skulldagrait's hub</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f9;margin:0;padding:18px}a{color:#0077cc}</style>
+</head>
+<body>
+<h1>skulldagrait's hub</h1>
+<p>This exported index uses the PROJECTS list you edited. Open items to view them (files should exist in the same folder).</p>
+<div id="list"></div>
+<script>
+  const PROJECTS = ${JSON.stringify(sanitizedProjects, null, 2)};
+  const list = document.getElementById('list');
+  function el(html){ const d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
+  PROJECTS.forEach(p => {
+    const item = el('<div style="background:#fff;padding:10px;margin:8px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.06)"><a href="'+p.file+'" target="_blank" rel="noopener">'+(p.neutral||p.original)+' — <small style="color:#666">'+p.file+'</small></a></div>');
+    list.appendChild(item);
+  });
+</script>
+</body>
+</html>`;
+  downloadBlob('index.html', exportHtml);
+});
+
+/* ----- helpers & init ----- */
+function escapeHtml(s){
+  if(!s && s!==0) return '';
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function init(){
+  loadFromLocalOrDefault();
+  renderList();
+  // if there is a first item, preselect it silently
+  if(PROJECTS.length) openEditorFor(0);
+}
+init();
+
+/* Allow exporting current configuration as JSON (console friendly) */
+window._PROJECTS = PROJECTS;
+window.exportConfigJSON = () => JSON.stringify(PROJECTS, null, 2);
+
+/* small accessibility: allow pressing "d" to download all placeholders (dev shortcut) */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'd' && (e.ctrlKey||e.metaKey)) {
+    e.preventDefault();
+    downloadAllPlaceholders.click();
+  }
+});
+
+</script>
 </body>
 </html>
